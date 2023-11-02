@@ -92,7 +92,7 @@
       "maintenanceMode": {
         "startInMaintenanceMode": false
       },
-      "migrations": {},
+      "migrations": null,
       "proxyGenesisCompanion": {
         "proxies": []
       },
