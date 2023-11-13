@@ -236,9 +236,9 @@ pub const HOURS: BlockNumber = MINUTES * 60;
 pub const DAYS: BlockNumber = HOURS * 24;
 
 // Unit = the base number of indivisible units for balances
-pub const UNIT: Balance = 1_000_000_000_000;
-pub const MILLIUNIT: Balance = 1_000_000_000;
-pub const MICROUNIT: Balance = 1_000_000;
+pub const UNIT: Balance = 1_000_000_000_000_000_000;
+pub const MILLIUNIT: Balance = UNIT / 1_000;
+pub const MICROUNIT: Balance = UNIT / 1_000_000;
 
 /// Current approximation of the gas/s consumption considering
 /// EVM execution over compiled WASM (on 4.4Ghz CPU).
