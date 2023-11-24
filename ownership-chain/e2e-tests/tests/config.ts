@@ -17,8 +17,8 @@ export const GENESIS_ACCOUNT = "0xC0F0f4ab324C46e55D02D0033343B4Be8A55532d";
 export const GENESIS_ACCOUNT_PRIVATE_KEY = "0xb9d2ea9a615f3165812e8d44de0d24da9bbd164b65c4f0573e1ce2c8dbd9c8df";
 export const GENESIS_ACCOUNT_BALANCE = "77559934324363988853790420524572160";
 export const GAS_PRICE = "0x3B9ACA00";
-export const ETH_BLOCK_GAS_LIMIT = 15000000; // The same configuration as runtime
-export const GAS_LIMIT = ETH_BLOCK_GAS_LIMIT - 10000000;
+export const ETH_BLOCK_GAS_LIMIT = 140000000; // The same configuration as runtime
+export const GAS_LIMIT = 31000;
 
 // LAOS Evolution Contract
 export const EVOLUTION_COLLETION_FACTORY_ABI = EvolutionCollectionFactory.abi as AbiItem[];
