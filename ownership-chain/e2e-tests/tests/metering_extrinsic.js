@@ -5,11 +5,11 @@ async function main() {
     const api = await ApiPromise.create({ provider });
 
 
-    // let totalSize = 0;
-    // let totalExtrinsics = 0;
-    // const blockNumber = 251682; // Replace with the desired block number
-    // const hash = await api.rpc.chain.getBlockHash(blockNumber);
-    const block = await api.rpc.chain.getBlock();
+    let totalSize = 0;
+    let totalExtrinsics = 0;
+    const blockNumber = 9; // Replace with the desired block number
+    const hash = await api.rpc.chain.getBlockHash(blockNumber);
+    const block = await api.rpc.chain.getBlock(hash);
 
     console.log(block.toHuman());
     block.block.extrinsics.forEach((tx) => {
@@ -26,7 +26,6 @@ async function main() {
 
 
 
-    const signer = new Wallet()
 }
 
 main().catch(console.error);
