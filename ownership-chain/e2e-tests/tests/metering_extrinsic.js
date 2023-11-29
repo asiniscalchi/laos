@@ -4,7 +4,6 @@ async function main() {
     const provider = new WsProvider('ws://127.0.0.0:9999');
     const api = await ApiPromise.create({ provider });
 
-
     let totalSize = 0;
     let totalExtrinsics = 0;
     const blockNumber = 9; // Replace with the desired block number
@@ -23,9 +22,6 @@ async function main() {
 
     console.log(`Total size of all transactions in the block: ${totalSize} bytes`);
     console.log(`Total number of transactions in the block: ${totalExtrinsics}`);
-
-
-
 }
 
 main().catch(console.error);

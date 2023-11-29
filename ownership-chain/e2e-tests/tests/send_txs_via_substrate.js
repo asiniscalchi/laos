@@ -3,7 +3,6 @@ const { Keyring } = require('@polkadot/keyring');
 
 const BOB = '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty';
 
-
 async function main() {
     const provider = new WsProvider('ws://127.0.0.0:9999');
     const api = await ApiPromise.create({ provider });
@@ -18,7 +17,6 @@ async function main() {
         const hash = await transfer.signAndSend(alice, {nonce});
         nonce++;
     }
-
 }
 
 main().catch(console.error);
