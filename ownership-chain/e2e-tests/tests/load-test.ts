@@ -16,46 +16,17 @@ describeWithExistingNode("Frontier RPC (Load Test)", (context) => {
 
 	step("thousands mints over a collection", async function () {
 		this.timeout(700000);
-		const contract = new context.web3.eth.Contract(EVOLUTION_COLLETION_FACTORY_ABI, CONTRACT_ADDRESS, {
-			from: GENESIS_ACCOUNT,
-			gasPrice: GAS_PRICE,
-			gas: GAS_LIMIT,
-		});
-		context.web3.eth.accounts.wallet.add(GENESIS_ACCOUNT_PRIVATE_KEY);
+
 		const nonce = await context.web3.eth.getTransactionCount(GENESIS_ACCOUNT);
 
-		//////////////////////////////////////
-		/////// GET CALLDATA
-		//////////////////////////////////////
-		// const abi = contract.methods.createCollection(GENESIS_ACCOUNT).encodeABI();
-		// console.log(`ABI: ${abi}`);
-
-		// const tx = {
-		// 	to: CONTRACT_ADDRESS,
-		// 	gas: GAS_LIMIT,
-		// 	gasPrice: GAS_PRICE,
-		// 	data: abi,
-		// }
-
-		// context.web3.eth.accounts.signTransaction(tx, GENESIS_ACCOUNT_PRIVATE_KEY)
-		// 	.then((signed) => {
-		// 		context.web3.eth.sendSignedTransaction(signed.rawTransaction)
-		// 			.on('receipt', (receipt) => {
-		// 				console.log(`Transaction ${receipt.transactionHash} included in block ${receipt.blockNumber}`);
-		// 			})
-		// 			.on('error', (error) => {
-		// 				console.error(error);
-		// 			});
-		// 	});
-		//////////////////////////////////////
-		//////////////////////////////////////
-		//////////////////////////////////////
-
+		// check block gas limit
 		const blockGasLimit = (await context.web3.eth.getBlock("latest")).gasLimit;
 		console.log(`Block gas limit: ${blockGasLimit}`);
+
 		console.log(`Creating collection...`);
 		const result = await createCollection(context);
 		console.log(`Collection created at: ${result.options.address}`);
+
 		const collectionContract = new context.web3.eth.Contract(EVOLUTION_COLLECTION_ABI, result.options.address, {
 			from: GENESIS_ACCOUNT,
 			gasPrice: GAS_PRICE,
@@ -71,7 +42,7 @@ describeWithExistingNode("Frontier RPC (Load Test)", (context) => {
 			const estimateGas = await collectionContract.methods.mintWithExternalURI(to, slot, tokenURI).estimateGas({
 				from: GENESIS_ACCOUNT,
 			})
-			console.log(`[${i}] Estimated gas: ${estimateGas}`); 
+			console.log(`[${i}] Estimated gas: ${estimateGas} | collection: ${result.options.address}`); 
 			collectionContract.methods.mintWithExternalURI(to, slot, tokenURI).send({
 				from: GENESIS_ACCOUNT,
 				gas: GAS_LIMIT,
@@ -89,3 +60,30 @@ describeWithExistingNode("Frontier RPC (Load Test)", (context) => {
 		}
 	});
 });
+
+//////////////////////////////////////
+/////// GET CALLDATA
+//////////////////////////////////////
+// const abi = contract.methods.createCollection(GENESIS_ACCOUNT).encodeABI();
+// console.log(`ABI: ${abi}`);
+
+// const tx = {
+// 	to: CONTRACT_ADDRESS,
+// 	gas: GAS_LIMIT,
+// 	gasPrice: GAS_PRICE,
+// 	data: abi,
+// }
+
+// context.web3.eth.accounts.signTransaction(tx, GENESIS_ACCOUNT_PRIVATE_KEY)
+// 	.then((signed) => {
+// 		context.web3.eth.sendSignedTransaction(signed.rawTransaction)
+// 			.on('receipt', (receipt) => {
+// 				console.log(`Transaction ${receipt.transactionHash} included in block ${receipt.blockNumber}`);
+// 			})
+// 			.on('error', (error) => {
+// 				console.error(error);
+// 			});
+// 	});
+//////////////////////////////////////
+//////////////////////////////////////
+//////////////////////////////////////
