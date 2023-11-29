@@ -1,10 +1,6 @@
-import { expect } from "chai";
 import { step } from "mocha-steps";
-import Contract from "web3-eth-contract";
 import {
-	CONTRACT_ADDRESS,
 	EVOLUTION_COLLECTION_ABI,
-	EVOLUTION_COLLETION_FACTORY_ABI,
 	GAS_LIMIT,
 	GAS_PRICE,
 	GENESIS_ACCOUNT,
@@ -12,6 +8,12 @@ import {
 } from "./config";
 import { createCollection, customRequest, describeWithExistingNode } from "./util";
 
+// ATTENTION !!!
+// Before running load test, make sure to:
+// update GENESIS_ACCOUNT with the address of the account that will be used to create the collection
+// update GENESIS_ACCOUNT_PRIVATE_KEY with the private key of the account that will be used to create the collection
+// be aware the number of transactions that will be sent is 6000
+// check rpc endpoint in config.ts => https://vscode.dev/github/freeverseio/laos/blob/test/load_testing/ownership-chain/e2e-tests/tests/util.ts#L42-L43
 describeWithExistingNode("Frontier RPC (Load Test)", (context) => {
 
 	step("thousands mints over a collection", async function () {
