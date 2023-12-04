@@ -19,39 +19,39 @@ describeWithExistingNode("Frontier RPC (Load Test)", (context) => {
 	step("thousands mints over a collection", async function () {
 		this.timeout(700000);
 
-		const nonce = await context.web3.eth.getTransactionCount(GENESIS_ACCOUNT);
+		// const nonce = await context.web3.eth.getTransactionCount(GENESIS_ACCOUNT);
 
-		// check block gas limit
-		const blockGasLimit = (await context.web3.eth.getBlock("latest")).gasLimit;
-		console.log(`Block gas limit: ${blockGasLimit}`);
+		// // check block gas limit
+		// const blockGasLimit = (await context.web3.eth.getBlock("latest")).gasLimit;
+		// console.log(`Block gas limit: ${blockGasLimit}`);
 
-		console.log(`Creating collection...`);
-		const result = await createCollection(context);
-		console.log(`Collection created at: ${result.options.address}`);
+		// console.log(`Creating collection...`);
+		// const result = await createCollection(context);
+		// console.log(`Collection created at: ${result.options.address}`);
 
-		const collectionContract = new context.web3.eth.Contract(EVOLUTION_COLLECTION_ABI, result.options.address, {
-			from: GENESIS_ACCOUNT,
-			gasPrice: GAS_PRICE,
-			gas: GAS_LIMIT,
-		});
-		context.web3.eth.accounts.wallet.add(GENESIS_ACCOUNT_PRIVATE_KEY);
+		// const collectionContract = new context.web3.eth.Contract(EVOLUTION_COLLECTION_ABI, result.options.address, {
+		// 	from: GENESIS_ACCOUNT,
+		// 	gasPrice: GAS_PRICE,
+		// 	gas: GAS_LIMIT,
+		// });
+		// context.web3.eth.accounts.wallet.add(GENESIS_ACCOUNT_PRIVATE_KEY);
 
-		console.log(`Sending transactions...`);
-		for (let i = 0; i < 6000; i++) {
-			const slot = i;
-			const to = GENESIS_ACCOUNT;
-			const tokenURI = "ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaassssssssssssssxxxxxxxxxxxxx";
-			const estimateGas = await collectionContract.methods.mintWithExternalURI(to, slot, tokenURI).estimateGas({
-				from: GENESIS_ACCOUNT,
-			})
-			console.log(`[${i}] Estimated gas: ${estimateGas} | collection: ${result.options.address}`); 
-			collectionContract.methods.mintWithExternalURI(to, slot, tokenURI).send({
-				from: GENESIS_ACCOUNT,
-				gas: GAS_LIMIT,
-				gasPrice: GAS_PRICE,
-				nonce: nonce + i,
-			})
-		}
+		// console.log(`Sending transactions...`);
+		// for (let i = 0; i < 6000; i++) {
+		// 	const slot = i;
+		// 	const to = GENESIS_ACCOUNT;
+		// 	const tokenURI = "ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaassssssssssssssxxxxxxxxxxxxx";
+		// 	const estimateGas = await collectionContract.methods.mintWithExternalURI(to, slot, tokenURI).estimateGas({
+		// 		from: GENESIS_ACCOUNT,
+		// 	})
+		// 	console.log(`[${i}] Estimated gas: ${estimateGas} | collection: ${result.options.address}`); 
+		// 	collectionContract.methods.mintWithExternalURI(to, slot, tokenURI).send({
+		// 		from: GENESIS_ACCOUNT,
+		// 		gas: GAS_LIMIT,
+		// 		gasPrice: GAS_PRICE,
+		// 		nonce: nonce + i,
+		// 	})
+		// }
 
 		// TXPOOL
 		while (true) {
