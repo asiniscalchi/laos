@@ -135,7 +135,7 @@ where
 
 		// Record Substrate related costs
 		// TODO: Add `ref_time` when precompiles are benchmarked
-		handle.record_external_cost(None, Some(consumed_weight.proof_size()))?;
+		handle.record_external_cost(None, Some(consumed_weight.proof_size()), Some(0))?;
 
 		Ok(succeed(EvmDataWriter::new().build()))
 	}

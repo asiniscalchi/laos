@@ -180,7 +180,7 @@ where
 
 				// Record Substrate related costs
 				// TODO: Add `ref_time` when precompiles are benchmarked
-				handle.record_external_cost(None, Some(consumed_weight.proof_size()))?;
+				handle.record_external_cost(None, Some(consumed_weight.proof_size()), Some(0))?;
 
 				Ok(succeed(EvmDataWriter::new().write(token_id).build()))
 			},
@@ -233,7 +233,7 @@ where
 
 				// Record Substrate related costs
 				// TODO: Add `ref_time` when precompiles are benchmarked
-				handle.record_external_cost(None, Some(consumed_weight.proof_size()))?;
+				handle.record_external_cost(None, Some(consumed_weight.proof_size()), Some(0))?;
 
 				Ok(succeed(sp_std::vec![]))
 			},
@@ -264,7 +264,7 @@ where
 
 				// Record Substrate related costs
 				// TODO: Add `ref_time` when precompiles are benchmarked
-				handle.record_external_cost(None, Some(consumed_weight.proof_size()))?;
+				handle.record_external_cost(None, Some(consumed_weight.proof_size()), Some(0))?;
 
 				Ok(succeed(EvmDataWriter::new().build()))
 			},
@@ -295,7 +295,7 @@ where
 
 				// Record Substrate related costs
 				// TODO: Add `ref_time` when precompiles are benchmarked
-				handle.record_external_cost(None, Some(consumed_weight.proof_size()))?;
+				handle.record_external_cost(None, Some(consumed_weight.proof_size()), Some(0))?;
 
 				Ok(succeed(EvmDataWriter::new().build()))
 			},
@@ -346,7 +346,7 @@ where
 		handle.record_cost(GasCalculator::<Runtime>::weight_to_gas(consumed_weight))?;
 
 		// Record Substrate related costs
-		handle.record_external_cost(None, Some(consumed_weight.proof_size()))?;
+		handle.record_external_cost(None, Some(consumed_weight.proof_size()), Some(0))?;
 
 		Ok(succeed(EvmDataWriter::new().build()))
 	}
