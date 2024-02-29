@@ -4,12 +4,10 @@ use fp_evm::GenesisAccount;
 use klaos_ownership_runtime::{AccountId, AuraId, Precompiles, REVERT_BYTECODE};
 use sc_service::ChainType;
 use sp_core::{H160, U256};
-use sp_runtime::traits::Zero;
 use std::{collections::BTreeMap, str::FromStr};
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
-pub type ChainSpec =
-	sc_service::GenericChainSpec<klaos_ownership_runtime::RuntimeGenesisConfig, Extensions>;
+pub type ChainSpec = sc_service::GenericChainSpec<(), Extensions>;
 
 /// Generate the session keys from individual elements.
 ///
@@ -25,34 +23,25 @@ pub fn development_config() -> ChainSpec {
 	properties.insert("tokenDecimals".into(), 18.into());
 	properties.insert("ss58Format".into(), 42.into());
 
-	// TODO: `from_genesis` will be deprecated in May 2024, use `GenesisBuilder` instead.
-	ChainSpec::from_genesis(
-		// Name
-		"Development",
-		// ID
-		"dev",
-		ChainType::Development,
-		move || {
-			testnet_genesis(
-				// initial collators.
-				vec![(predefined_accounts::ALITH.into(), get_collator_keys_from_seed("Alice"))],
-				predefined_accounts::accounts(),
-				// Give Alice root privileges
-				Some(predefined_accounts::ALITH.into()),
-				2001.into(),
-			)
-		},
-		Vec::new(),
-		None,
-		None,
-		None,
-		None,
+	ChainSpec::builder(
+		klaos_ownership_runtime::WASM_BINARY.expect("WASM binary was not build, please build it!"),
 		Extensions {
 			relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
 			para_id: 2001,
 		},
-		klaos_ownership_runtime::WASM_BINARY.expect("WASM binary was not build, please build it!"),
 	)
+	.with_name("Development")
+	.with_id("dev")
+	.with_chain_type(ChainType::Development)
+	.with_genesis_config_patch(testnet_genesis(
+		// initial collators.
+		vec![(predefined_accounts::ALITH.into(), get_collator_keys_from_seed("Alice"))],
+		predefined_accounts::accounts(),
+		// Give Alice root privileges
+		Some(predefined_accounts::ALITH.into()),
+		2001.into(),
+	))
+	.build()
 }
 
 pub fn local_testnet_config() -> ChainSpec {
@@ -62,39 +51,26 @@ pub fn local_testnet_config() -> ChainSpec {
 	properties.insert("tokenDecimals".into(), 18.into());
 	properties.insert("ss58Format".into(), 42.into());
 
-	ChainSpec::from_genesis(
-		// Name
-		"Local Testnet",
-		// ID
-		"klaos_local_testnet",
-		ChainType::Local,
-		move || {
-			testnet_genesis(
-				// initial collators.
-				vec![(predefined_accounts::ALITH.into(), get_collator_keys_from_seed("Alice"))],
-				predefined_accounts::accounts(),
-				// Give Alice root privileges
-				Some(predefined_accounts::ALITH.into()),
-				2001.into(),
-			)
-		},
-		// Bootnodes
-		Vec::new(),
-		// Telemetry
-		None,
-		// Protocol ID
-		Some("template-local"),
-		// Fork ID
-		None,
-		// Properties
-		Some(properties),
-		// Extensions
+	ChainSpec::builder(
+		klaos_ownership_runtime::WASM_BINARY.expect("WASM binary was not build, please build it!"),
 		Extensions {
 			relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
 			para_id: 2001,
 		},
-		klaos_ownership_runtime::WASM_BINARY.expect("WASM binary was not build, please build it!"),
 	)
+	.with_name("Local Testnet")
+	.with_id("klaos_local_testnet")
+	.with_chain_type(ChainType::Local)
+	.with_protocol_id("template-local")
+	.with_genesis_config_patch(testnet_genesis(
+		// initial collators.
+		vec![(predefined_accounts::ALITH.into(), get_collator_keys_from_seed("Alice"))],
+		predefined_accounts::accounts(),
+		// Give Alice root privileges
+		Some(predefined_accounts::ALITH.into()),
+		2001.into(),
+	))
+	.build()
 }
 
 fn testnet_genesis(
@@ -102,122 +78,109 @@ fn testnet_genesis(
 	endowed_accounts: Vec<AccountId>,
 	root_key: Option<AccountId>,
 	id: ParaId,
-) -> klaos_ownership_runtime::RuntimeGenesisConfig {
-	klaos_ownership_runtime::RuntimeGenesisConfig {
-		balances: klaos_ownership_runtime::BalancesConfig {
-			balances: endowed_accounts.iter().cloned().map(|k| (k, 1e24 as u128)).collect(),
+) -> serde_json::Value {
+	let mut evm_accounts: BTreeMap<_, _> = Precompiles::used_addresses()
+		.iter()
+		.map(|&address| {
+			(
+				address,
+				GenesisAccount {
+					nonce: Default::default(),
+					balance: Default::default(),
+					storage: Default::default(),
+					code: REVERT_BYTECODE.into(),
+				},
+			)
+		})
+		.collect();
+
+	evm_accounts.insert(
+		// H160 address of Alice dev account
+		// Derived from SS58 (42 prefix) address
+		// SS58: 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY
+		// hex: 0xd43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d
+		// Using the full hex key, truncating to the first 20 bytes (the first 40 hex
+		// chars)
+		H160::from_str("d43593c715fdd31c61141abd04a99fd6822c8558")
+			.expect("internal H160 is valid; qed"),
+		fp_evm::GenesisAccount {
+			balance: U256::from_str("0xffffffffffffffffffffffffffffffff")
+				.expect("internal U256 is valid; qed"),
+			code: Default::default(),
+			nonce: Default::default(),
+			storage: Default::default(),
 		},
-		parachain_info: klaos_ownership_runtime::ParachainInfoConfig {
-			parachain_id: id,
-			..Default::default()
+	);
+	evm_accounts.insert(
+		// H160 address of CI test runner account
+		H160::from_str("6be02d1d3665660d22ff9624b7be0551ee1ac91b")
+			.expect("internal H160 is valid; qed"),
+		fp_evm::GenesisAccount {
+			balance: U256::from_str("0xffffffffffffffffffffffffffffffff")
+				.expect("internal U256 is valid; qed"),
+			code: Default::default(),
+			nonce: Default::default(),
+			storage: Default::default(),
 		},
-		collator_selection: klaos_ownership_runtime::CollatorSelectionConfig {
-			invulnerables: invulnerables.iter().cloned().map(|(acc, _)| acc).collect(),
-			candidacy_bond: Zero::zero(),
-			..Default::default()
+	);
+	evm_accounts.insert(
+		// H160 address for benchmark usage
+		H160::from_str("1000000000000000000000000000000000000001")
+			.expect("internal H160 is valid; qed"),
+		fp_evm::GenesisAccount {
+			nonce: U256::from(1),
+			balance: U256::from(1_000_000_000_000_000_000_000_000u128),
+			storage: Default::default(),
+			code: vec![0x00],
 		},
-		session: klaos_ownership_runtime::SessionConfig {
-			keys: invulnerables
+	);
+	evm_accounts.insert(
+		// H160 address of dev account
+		// Private key :
+		// 0xb9d2ea9a615f3165812e8d44de0d24da9bbd164b65c4f0573e1ce2c8dbd9c8df
+		predefined_accounts::FAITH.into(),
+		fp_evm::GenesisAccount {
+			balance: U256::from_str("0xef000000000000000000000000000")
+				.expect("internal U256 is valid; qed"),
+			code: Default::default(),
+			nonce: Default::default(),
+			storage: Default::default(),
+		},
+	);
+
+	serde_json::json!({
+		"balances": {
+			"balances": endowed_accounts.iter().cloned().map(|k| (k, 1e22 as u64)).collect::<Vec<_>>(),
+		},
+		"parachainInfo": {
+			"parachainId": id,
+		},
+		"collatorSelection": {
+			"invulnerables": invulnerables.iter().cloned().map(|(acc, _)| acc).collect::<Vec<_>>(),
+			"candidacyBond": 0
+		},
+		"session": {
+			"keys": invulnerables
 				.into_iter()
 				.map(|(acc, aura)| {
 					(
-						acc,                         // account id
+						acc.clone(),                 // account id
 						acc,                         // validator id
 						template_session_keys(aura), // session keys
 					)
 				})
-				.collect(),
+			.collect::<Vec<_>>(),
 		},
-		// no need to pass anything to aura, in fact it will panic if we do. Session will take care
-		// of this.
-		aura: Default::default(),
-		aura_ext: Default::default(),
-		parachain_system: Default::default(),
-		polkadot_xcm: klaos_ownership_runtime::PolkadotXcmConfig {
-			safe_xcm_version: Some(SAFE_XCM_VERSION),
-			..Default::default()
+		"polkadotXcm": {
+			"safeXcmVersion": Some(SAFE_XCM_VERSION),
 		},
-		sudo: klaos_ownership_runtime::SudoConfig { key: root_key },
-		transaction_payment: Default::default(),
+		"sudo": { "key": root_key },
 		// EVM compatibility
-		evm_chain_id: klaos_ownership_runtime::EVMChainIdConfig {
-			chain_id: 667,
-			..Default::default()
+		"evmChainId": {
+			"chainId": 667,
 		},
-		evm: klaos_ownership_runtime::EVMConfig {
-			accounts: {
-				let mut map: BTreeMap<_, _> = Precompiles::used_addresses()
-					.iter()
-					.map(|&address| {
-						(
-							address,
-							GenesisAccount {
-								nonce: Default::default(),
-								balance: Default::default(),
-								storage: Default::default(),
-								code: REVERT_BYTECODE.into(),
-							},
-						)
-					})
-					.collect();
-
-				map.insert(
-					// H160 address of Alice dev account
-					// Derived from SS58 (42 prefix) address
-					// SS58: 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY
-					// hex: 0xd43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d
-					// Using the full hex key, truncating to the first 20 bytes (the first 40 hex
-					// chars)
-					H160::from_str("d43593c715fdd31c61141abd04a99fd6822c8558")
-						.expect("internal H160 is valid; qed"),
-					fp_evm::GenesisAccount {
-						balance: U256::from_str("0xffffffffffffffffffffffffffffffff")
-							.expect("internal U256 is valid; qed"),
-						code: Default::default(),
-						nonce: Default::default(),
-						storage: Default::default(),
-					},
-				);
-				map.insert(
-					// H160 address of CI test runner account
-					H160::from_str("6be02d1d3665660d22ff9624b7be0551ee1ac91b")
-						.expect("internal H160 is valid; qed"),
-					fp_evm::GenesisAccount {
-						balance: U256::from_str("0xffffffffffffffffffffffffffffffff")
-							.expect("internal U256 is valid; qed"),
-						code: Default::default(),
-						nonce: Default::default(),
-						storage: Default::default(),
-					},
-				);
-				map.insert(
-					// H160 address for benchmark usage
-					H160::from_str("1000000000000000000000000000000000000001")
-						.expect("internal H160 is valid; qed"),
-					fp_evm::GenesisAccount {
-						nonce: U256::from(1),
-						balance: U256::from(1_000_000_000_000_000_000_000_000u128),
-						storage: Default::default(),
-						code: vec![0x00],
-					},
-				);
-				map.insert(
-					// H160 address of dev account
-					// Private key :
-					// 0xb9d2ea9a615f3165812e8d44de0d24da9bbd164b65c4f0573e1ce2c8dbd9c8df
-					predefined_accounts::FAITH.into(),
-					fp_evm::GenesisAccount {
-						balance: U256::from_str("0xef000000000000000000000000000")
-							.expect("internal U256 is valid; qed"),
-						code: Default::default(),
-						nonce: Default::default(),
-						storage: Default::default(),
-					},
-				);
-				map
-			},
-			..Default::default()
-		},
-		..Default::default()
-	}
+		"evm": {
+			"accounts": evm_accounts
+		}
+	})
 }

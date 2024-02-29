@@ -21,6 +21,7 @@ chain = "local-v"
   ws_port = 9999
   command = "{{ZOMBIENET_OWNCHAIN_COMMAND}}"
   validator = true
+  args = ["-ldebug"]
 
   [[parachains.collators]]
   name = "ownership-1"

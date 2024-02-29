@@ -11,6 +11,7 @@ futures = { workspace = true }
 log = { workspace = true }
 parity-scale-codec = { workspace = true, features = ["derive"] }
 serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
 jsonrpsee = { workspace = true, features = ["server"] }
 hex-literal = { workspace = true }
 
